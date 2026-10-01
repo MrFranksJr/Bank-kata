@@ -285,7 +285,7 @@ The `:bank-starter` module provides participants with a runnable, low-friction H
 - Add an inter-bank client in `:bank-starter` to call the central SWIFT network when an outgoing transfer occurs (`POST /swift/transfers`).
 - Create an automated test harness in `:bank-starter` verifying that participants can develop against domain interfaces via TDD before connecting to the live network.
 
-### * Step 3: Build Central SWIFT Routing Hub and Registration Engine
+### ✓ Step 3: Build Central SWIFT Routing Hub and Registration Engine
 The `:swift-hub` module runs a standalone central server that maintains the participant BIC registry, routes transfers between banks, and validates balance consistency.
 
 - Implement participant registration endpoints (`POST /swift/register`) accepting bank name, BIC code, and public Localtunnel/ngrok URL.
@@ -293,7 +293,7 @@ The `:swift-hub` module runs a standalone central server that maintains the part
 - Implement connectivity health checks and timeout handlers to detect unreachable or slow participant banks.
 - Add an in-memory audit ledger recording all inter-bank settlements to detect double-spending or dropped funds.
 
-###   Step 4: Implement Traffic Simulator, Anomaly Engine, and Live Scoreboard
+### * Step 4: Implement Traffic Simulator, Anomaly Engine, and Live Scoreboard
 The host engine generates realistic client traffic flows, tracks participant reliability/correctness scores, and displays a real-time web dashboard.
 
 - Implement a simulated customer traffic generator in `:swift-hub` generating automated deposits, withdrawals, and cross-bank transfers with configurable frequency and ramp-up stages.
