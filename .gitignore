@@ -4,3 +4,7 @@
 .project
 .classpath
 *.iml
+/.ideas
+.gradle/
+build/
+bin/
