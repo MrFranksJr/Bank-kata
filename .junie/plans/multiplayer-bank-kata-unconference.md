@@ -277,7 +277,7 @@ The repository builds with Gradle Kotlin DSL and contains a modernized Kotlin po
 - Port the legacy Java domain classes (`Account`, `Amount`, `Statement`, `StatementLine`, `Transaction`) and tests to idiomatic Kotlin while strictly preserving the 9 Object Calisthenics constraints (value classes, first-class collections, no getters/setters for state extraction, single level of indentation).
 - Ensure `./gradlew test` passes cleanly across all modules.
 
-### * Step 2: Implement Shared Contracts and Participant Bank Starter Kit
+### ✓ Step 2: Implement Shared Contracts and Participant Bank Starter Kit
 The `:bank-starter` module provides participants with a runnable, low-friction HTTP bank server wired to domain interfaces and pre-configured for local tunneling.
 
 - Define shared DTOs and data models in `:shared-contracts` (`TransferRequest`, `TransferResult`, `DepositRequest`, `WithdrawRequest`, `StatementResponse`, `BicCode`, `Iban`).
@@ -285,7 +285,7 @@ The `:bank-starter` module provides participants with a runnable, low-friction H
 - Add an inter-bank client in `:bank-starter` to call the central SWIFT network when an outgoing transfer occurs (`POST /swift/transfers`).
 - Create an automated test harness in `:bank-starter` verifying that participants can develop against domain interfaces via TDD before connecting to the live network.
 
-###   Step 3: Build Central SWIFT Routing Hub and Registration Engine
+### * Step 3: Build Central SWIFT Routing Hub and Registration Engine
 The `:swift-hub` module runs a standalone central server that maintains the participant BIC registry, routes transfers between banks, and validates balance consistency.
 
 - Implement participant registration endpoints (`POST /swift/register`) accepting bank name, BIC code, and public Localtunnel/ngrok URL.
