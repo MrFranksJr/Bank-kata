@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
+import io.ktor.server.plugins.autohead.AutoHeadResponse
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
@@ -31,6 +32,8 @@ fun Application.bankModule(
     swiftHubUrl: String? = null,
     bic: String = "BANKAXXX"
 ) {
+    install(AutoHeadResponse)
+
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true

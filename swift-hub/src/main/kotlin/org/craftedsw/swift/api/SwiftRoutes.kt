@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
+import io.ktor.server.plugins.autohead.AutoHeadResponse
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
@@ -17,10 +18,12 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.craftedsw.contracts.ErrorResponse
 import org.craftedsw.contracts.HealthResponse
+import org.craftedsw.contracts.LedgerResponse
 import org.craftedsw.contracts.NetworkMetrics
 import org.craftedsw.contracts.RegisterBankRequest
 import org.craftedsw.contracts.RegisterBankResponse
 import org.craftedsw.contracts.ScoreboardState
+import org.craftedsw.contracts.SimulatorStatusResponse
 import org.craftedsw.contracts.TransferRequest
 import org.craftedsw.contracts.TransferResult
 import org.craftedsw.contracts.TransferStatus
@@ -36,6 +39,8 @@ fun Application.swiftHubModule(
     transferRouter: TransferRouter = TransferRouter(bankRegistry, auditLedger),
     trafficSimulator: TrafficSimulator = TrafficSimulator(bankRegistry, transferRouter)
 ) {
+    install(AutoHeadResponse)
+
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true
@@ -94,12 +99,12 @@ fun Application.swiftHubModule(
         get("/swift/ledger") {
             call.respond(
                 HttpStatusCode.OK,
-                mapOf(
-                    "totalSettledVolumeCents" to auditLedger.getTotalSettledVolumeCents().toString(),
-                    "totalSuccessfulTransactions" to auditLedger.getTotalSuccessfulCount().toString(),
-                    "totalFailedTransactions" to auditLedger.getTotalFailedCount().toString(),
-                    "isConservationOfMoneyVerified" to auditLedger.verifyConservationOfMoney().toString(),
-                    "recentEntries" to auditLedger.getRecentEntries(30)
+                LedgerResponse(
+                    totalSettledVolumeCents = auditLedger.getTotalSettledVolumeCents(),
+                    totalSuccessfulTransactions = auditLedger.getTotalSuccessfulCount(),
+                    totalFailedTransactions = auditLedger.getTotalFailedCount(),
+                    isConservationOfMoneyVerified = auditLedger.verifyConservationOfMoney(),
+                    recentEntries = auditLedger.getRecentEntries(30)
                 )
             )
         }
@@ -126,18 +131,18 @@ fun Application.swiftHubModule(
         post("/swift/simulator/start") {
             val intervalMs = call.request.queryParameters["intervalMs"]?.toLongOrNull() ?: 2000L
             trafficSimulator.start(intervalMs)
-            call.respond(HttpStatusCode.OK, mapOf("status" to "RUNNING", "intervalMs" to intervalMs.toString()))
+            call.respond(HttpStatusCode.OK, SimulatorStatusResponse(status = "RUNNING", intervalMs = intervalMs))
         }
 
         post("/swift/simulator/stop") {
             trafficSimulator.stop()
-            call.respond(HttpStatusCode.OK, mapOf("status" to "STOPPED"))
+            call.respond(HttpStatusCode.OK, SimulatorStatusResponse(status = "STOPPED"))
         }
 
         post("/swift/simulator/burst") {
             val count = call.request.queryParameters["count"]?.toIntOrNull() ?: 5
             val executed = trafficSimulator.triggerBurst(count)
-            call.respond(HttpStatusCode.OK, mapOf("status" to "BURST_EXECUTED", "count" to executed.toString()))
+            call.respond(HttpStatusCode.OK, SimulatorStatusResponse(status = "BURST_EXECUTED", count = executed))
         }
     }
 }

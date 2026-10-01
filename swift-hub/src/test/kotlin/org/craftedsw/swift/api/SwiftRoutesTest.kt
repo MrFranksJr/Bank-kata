@@ -13,9 +13,11 @@ import io.ktor.server.testing.testApplication
 import org.assertj.core.api.Assertions.assertThat
 import org.craftedsw.contracts.BankNodeInfo
 import org.craftedsw.contracts.HealthResponse
+import org.craftedsw.contracts.LedgerResponse
 import org.craftedsw.contracts.RegisterBankRequest
 import org.craftedsw.contracts.RegisterBankResponse
 import org.craftedsw.contracts.ScoreboardState
+import org.craftedsw.contracts.SimulatorStatusResponse
 import org.craftedsw.contracts.TransferRequest
 import org.craftedsw.contracts.TransferResult
 import org.craftedsw.contracts.TransferStatus
@@ -131,12 +133,51 @@ class SwiftRoutesTest {
 
         val startRes = client.post("/swift/simulator/start?intervalMs=1000")
         assertThat(startRes.status).isEqualTo(HttpStatusCode.OK)
+        val startBody = startRes.body<SimulatorStatusResponse>()
+        assertThat(startBody.status).isEqualTo("RUNNING")
+        assertThat(startBody.intervalMs).isEqualTo(1000L)
 
         val burstRes = client.post("/swift/simulator/burst?count=3")
         assertThat(burstRes.status).isEqualTo(HttpStatusCode.OK)
+        val burstBody = burstRes.body<SimulatorStatusResponse>()
+        assertThat(burstBody.status).isEqualTo("BURST_EXECUTED")
 
         val stopRes = client.post("/swift/simulator/stop")
         assertThat(stopRes.status).isEqualTo(HttpStatusCode.OK)
+        val stopBody = stopRes.body<SimulatorStatusResponse>()
+        assertThat(stopBody.status).isEqualTo("STOPPED")
+    }
+
+    @Test
+    fun `ledger endpoint should return serializable ledger response with entries`() = testApplication {
+        val ledger = AuditLedger()
+        ledger.record(
+            TransferRequest(
+                transactionId = "tx-1",
+                fromIban = "BE68BANKA0001111111",
+                toIban = "BE68BANKB0002222222",
+                amountCents = 50000
+            ),
+            TransferResult("tx-1", TransferStatus.ACCEPTED, "Settled")
+        )
+
+        application {
+            swiftHubModule(auditLedger = ledger)
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) { json() }
+        }
+
+        val response = client.get("/swift/ledger")
+        assertThat(response.status).isEqualTo(HttpStatusCode.OK)
+        val ledgerResponse = response.body<LedgerResponse>()
+        assertThat(ledgerResponse.totalSettledVolumeCents).isEqualTo(50000L)
+        assertThat(ledgerResponse.totalSuccessfulTransactions).isEqualTo(1L)
+        assertThat(ledgerResponse.totalFailedTransactions).isEqualTo(0L)
+        assertThat(ledgerResponse.isConservationOfMoneyVerified).isTrue()
+        assertThat(ledgerResponse.recentEntries).hasSize(1)
+        assertThat(ledgerResponse.recentEntries.first().transactionId).isEqualTo("tx-1")
     }
 
     @Test

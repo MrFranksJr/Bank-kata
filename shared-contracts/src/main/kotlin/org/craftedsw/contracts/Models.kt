@@ -139,3 +139,30 @@ data class ScoreboardState(
     val metrics: NetworkMetrics,
     val recentTransfers: List<TransferRequest> = emptyList()
 )
+
+@Serializable
+data class LedgerEntry(
+    val transactionId: String,
+    val fromIban: String,
+    val toIban: String,
+    val amountCents: Long,
+    val status: TransferStatus,
+    val timestamp: Long,
+    val message: String
+)
+
+@Serializable
+data class LedgerResponse(
+    val totalSettledVolumeCents: Long,
+    val totalSuccessfulTransactions: Long,
+    val totalFailedTransactions: Long,
+    val isConservationOfMoneyVerified: Boolean,
+    val recentEntries: List<LedgerEntry>
+)
+
+@Serializable
+data class SimulatorStatusResponse(
+    val status: String,
+    val intervalMs: Long? = null,
+    val count: Int? = null
+)

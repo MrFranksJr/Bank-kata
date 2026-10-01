@@ -2,21 +2,10 @@ package org.craftedsw.swift.router
 
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
-import kotlinx.serialization.Serializable
+import org.craftedsw.contracts.LedgerEntry
 import org.craftedsw.contracts.TransferRequest
 import org.craftedsw.contracts.TransferResult
 import org.craftedsw.contracts.TransferStatus
-
-@Serializable
-data class LedgerEntry(
-    val transactionId: String,
-    val fromIban: String,
-    val toIban: String,
-    val amountCents: Long,
-    val status: TransferStatus,
-    val timestamp: Long,
-    val message: String
-)
 
 class AuditLedger {
 
