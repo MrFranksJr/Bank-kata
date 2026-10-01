@@ -118,4 +118,42 @@ class SwiftRoutesTest {
         assertThat(scoreboard.banks).hasSize(1)
         assertThat(scoreboard.metrics.activeBanksCount).isEqualTo(1)
     }
+
+    @Test
+    fun `simulator endpoints should start, burst, and stop`() = testApplication {
+        application {
+            swiftHubModule()
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) { json() }
+        }
+
+        val startRes = client.post("/swift/simulator/start?intervalMs=1000")
+        assertThat(startRes.status).isEqualTo(HttpStatusCode.OK)
+
+        val burstRes = client.post("/swift/simulator/burst?count=3")
+        assertThat(burstRes.status).isEqualTo(HttpStatusCode.OK)
+
+        val stopRes = client.post("/swift/simulator/stop")
+        assertThat(stopRes.status).isEqualTo(HttpStatusCode.OK)
+    }
+
+    @Test
+    fun `root and scoreboard endpoints should serve HTML dashboard`() = testApplication {
+        application {
+            swiftHubModule()
+        }
+
+        val client = createClient { }
+        val rootRes = client.get("/")
+        assertThat(rootRes.status).isEqualTo(HttpStatusCode.OK)
+        val rootHtml = rootRes.body<String>()
+        assertThat(rootHtml).contains("SWIFT Network Clearing House")
+
+        val scoreboardRes = client.get("/scoreboard")
+        assertThat(scoreboardRes.status).isEqualTo(HttpStatusCode.OK)
+        val scoreboardHtml = scoreboardRes.body<String>()
+        assertThat(scoreboardHtml).contains("SWIFT Network Clearing House")
+    }
 }

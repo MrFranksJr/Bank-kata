@@ -293,14 +293,14 @@ The `:swift-hub` module runs a standalone central server that maintains the part
 - Implement connectivity health checks and timeout handlers to detect unreachable or slow participant banks.
 - Add an in-memory audit ledger recording all inter-bank settlements to detect double-spending or dropped funds.
 
-### * Step 4: Implement Traffic Simulator, Anomaly Engine, and Live Scoreboard
+### ✓ Step 4: Implement Traffic Simulator, Anomaly Engine, and Live Scoreboard
 The host engine generates realistic client traffic flows, tracks participant reliability/correctness scores, and displays a real-time web dashboard.
 
 - Implement a simulated customer traffic generator in `:swift-hub` generating automated deposits, withdrawals, and cross-bank transfers with configurable frequency and ramp-up stages.
 - Build a scoring and anomaly detection engine that awards points for successful settlements and deducts penalty points for dropped transfers, invalid balances, timeouts, or 500 errors.
 - Create a lightweight real-time web dashboard (HTML/SSE or WebSocket) displaying live cash flows, participant bank health status, transaction volume, and leaderboard ranking.
 
-###   Step 5: Add Facilitation Materials, Participant Quickstart, and E2E Scenarios
+### * Step 5: Add Facilitation Materials, Participant Quickstart, and E2E Scenarios
 Facilitators and participants have end-to-end documentation, one-command run scripts, and verification tests for seamless execution during a 1-2 hour unconference session.
 
 - Write `PARTICIPANT_GUIDE.md` detailing the 5-minute quickstart: cloning, configuring BIC, running the localtunnel script, and step-by-step TDD progression milestones.

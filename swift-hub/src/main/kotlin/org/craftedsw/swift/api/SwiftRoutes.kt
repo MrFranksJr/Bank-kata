@@ -1,5 +1,6 @@
 package org.craftedsw.swift.api
 
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
@@ -8,6 +9,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
@@ -25,11 +27,14 @@ import org.craftedsw.contracts.TransferStatus
 import org.craftedsw.swift.router.AuditLedger
 import org.craftedsw.swift.router.BankRegistry
 import org.craftedsw.swift.router.TransferRouter
+import org.craftedsw.swift.simulator.TrafficSimulator
+import org.craftedsw.swift.ui.ScoreboardHtml
 
 fun Application.swiftHubModule(
     bankRegistry: BankRegistry = BankRegistry(),
     auditLedger: AuditLedger = AuditLedger(),
-    transferRouter: TransferRouter = TransferRouter(bankRegistry, auditLedger)
+    transferRouter: TransferRouter = TransferRouter(bankRegistry, auditLedger),
+    trafficSimulator: TrafficSimulator = TrafficSimulator(bankRegistry, transferRouter)
 ) {
     install(ContentNegotiation) {
         json(Json {
@@ -45,6 +50,14 @@ fun Application.swiftHubModule(
     }
 
     routing {
+        get("/") {
+            call.respondText(ScoreboardHtml.render(), ContentType.Text.Html)
+        }
+
+        get("/scoreboard") {
+            call.respondText(ScoreboardHtml.render(), ContentType.Text.Html)
+        }
+
         get("/health") {
             call.respond(HealthResponse(status = "UP", bic = "SWIFTHUB"))
         }
@@ -108,6 +121,23 @@ fun Application.swiftHubModule(
                 )
             )
             call.respond(HttpStatusCode.OK, state)
+        }
+
+        post("/swift/simulator/start") {
+            val intervalMs = call.request.queryParameters["intervalMs"]?.toLongOrNull() ?: 2000L
+            trafficSimulator.start(intervalMs)
+            call.respond(HttpStatusCode.OK, mapOf("status" to "RUNNING", "intervalMs" to intervalMs.toString()))
+        }
+
+        post("/swift/simulator/stop") {
+            trafficSimulator.stop()
+            call.respond(HttpStatusCode.OK, mapOf("status" to "STOPPED"))
+        }
+
+        post("/swift/simulator/burst") {
+            val count = call.request.queryParameters["count"]?.toIntOrNull() ?: 5
+            val executed = trafficSimulator.triggerBurst(count)
+            call.respond(HttpStatusCode.OK, mapOf("status" to "BURST_EXECUTED", "count" to executed.toString()))
         }
     }
 }
