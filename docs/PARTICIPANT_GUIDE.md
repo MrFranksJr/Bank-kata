@@ -7,7 +7,7 @@ Welcome to the **Multiplayer Banking Kata**! In this session, you and your pairi
 ## ⚡ 5-Minute Quickstart
 
 ### 1. Prerequisites
-- **JDK 17+** (JDK 21 recommended)
+- **JDK 25** (configured via `.sdkmanrc`)
 - **Node.js** (for `npx localtunnel`) or `ngrok`
 
 ### 2. Verify Build & Run Tests

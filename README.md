@@ -15,7 +15,7 @@ Participants implement their own bank node in Kotlin using **Outside-In TDD** an
 
 ## 🏗️ Repository Architecture
 
-This repository is built with **Gradle Kotlin DSL (`build.gradle.kts`)** and **Kotlin 2.x** targeting JVM 17/21:
+This repository is built with **Gradle Kotlin DSL (`build.gradle.kts`)** and **Kotlin 2.x** targeting **JVM 25**:
 
 ```
 Bank-kata/

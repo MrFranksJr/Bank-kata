@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.1.10" apply false
-    kotlin("plugin.serialization") version "2.1.10" apply false
+    kotlin("jvm") version "2.3.20" apply false
+    kotlin("plugin.serialization") version "2.3.20" apply false
 }
 
 allprojects {
@@ -16,22 +16,20 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
-        jvmToolchain(21)
+        jvmToolchain(25)
     }
 
     dependencies {
-        val implementation by configurations
-        val testImplementation by configurations
-        val testRuntimeOnly by configurations
-
-        testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-        testImplementation("org.assertj:assertj-core:3.27.3")
-        testImplementation("io.mockk:mockk:1.13.16")
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+        "testImplementation"("org.junit.jupiter:junit-jupiter:5.11.4")
+        "testImplementation"("org.assertj:assertj-core:3.27.3")
+        "testImplementation"("io.mockk:mockk:1.13.16")
+        "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
     }
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        systemProperty("net.bytebuddy.experimental", "true")
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
         testLogging {
             events("passed", "skipped", "failed")
         }
