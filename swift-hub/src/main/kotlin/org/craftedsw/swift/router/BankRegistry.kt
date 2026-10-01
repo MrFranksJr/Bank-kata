@@ -23,7 +23,17 @@ class BankRegistry {
     }
 
     fun getBank(bic: Bic): BankNodeInfo? {
-        return registry[bic.value.uppercase().trim()]
+        val normalized = bic.value.uppercase().trim()
+        val exact = registry[normalized]
+        if (exact != null) return exact
+
+        // Flexible lookup: match base bank identifier without trailing 'X' or '0'
+        val baseCode = normalized.trimEnd('X', '0')
+        if (baseCode.length >= 3) {
+            val match = registry.values.firstOrNull { it.bic.startsWith(baseCode) }
+            if (match != null) return match
+        }
+        return null
     }
 
     fun getAllBanks(): List<BankNodeInfo> {
@@ -31,13 +41,15 @@ class BankRegistry {
     }
 
     fun updateStatus(bic: Bic, status: String) {
-        registry.computeIfPresent(bic.value.uppercase().trim()) { _, current ->
+        val targetBank = getBank(bic) ?: return
+        registry.computeIfPresent(targetBank.bic) { _, current ->
             current.copy(status = status, lastSeenTimestamp = System.currentTimeMillis())
         }
     }
 
     fun recordTransaction(bic: Bic, isSuccess: Boolean, pointsAwarded: Long) {
-        registry.computeIfPresent(bic.value.uppercase().trim()) { _, current ->
+        val targetBank = getBank(bic) ?: return
+        registry.computeIfPresent(targetBank.bic) { _, current ->
             current.copy(
                 totalTransactions = current.totalTransactions + 1,
                 successfulTransactions = if (isSuccess) current.successfulTransactions + 1 else current.successfulTransactions,

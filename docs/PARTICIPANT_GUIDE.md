@@ -66,21 +66,50 @@ Watch your bank appear on the live projector scoreboard!
 
 ### Round 2: The SWIFT Network & Webhooks (00:45 - 01:15)
 - Open `bank-starter/src/main/kotlin/org/craftedsw/bank/api/BankRoutes.kt`.
-- Implement and test the incoming transfer webhook endpoint:
-  ```http
-  POST /api/transfer-in
-  Content-Type: application/json
+- Test and interact with your bank node using the supported HTTP endpoints:
 
-  {
-    "transactionId": "tx-1001",
-    "fromIban": "BE68BANKB0001234567",
-    "toIban": "BE68BANKA0009876543",
-    "amountCents": 150000,
-    "timestamp": "2026-10-01T14:30:00Z",
-    "reference": "Consulting Invoice"
-  }
-  ```
-- Send funds out to other banks via `POST /api/transfer-out` -> SWIFT Hub `POST /swift/transfers`.
+#### Bank Node HTTP API Reference
+1. **Deposit Funds (`POST /api/deposit`)**:
+   ```bash
+   curl -X POST http://localhost:8080/api/deposit \
+     -H "Content-Type: application/json" \
+     -d '{"iban": "BE68BANKA0001234567", "amountCents": 100000}'
+   ```
+2. **Withdraw Funds (`POST /api/withdraw`)**:
+   ```bash
+   curl -X POST http://localhost:8080/api/withdraw \
+     -H "Content-Type: application/json" \
+     -d '{"iban": "BE68BANKA0001234567", "amountCents": 30000}'
+   ```
+3. **Query Statement (`GET /api/statement/{iban}` or `GET /api/statement?iban=...`)**:
+   ```bash
+   curl -s http://localhost:8080/api/statement/BE68BANKA0001234567
+   ```
+4. **Incoming SWIFT Transfer Webhook (`POST /api/transfer-in`)**:
+   ```bash
+   curl -X POST http://localhost:8080/api/transfer-in \
+     -H "Content-Type: application/json" \
+     -d '{
+       "transactionId": "tx-1001",
+       "fromIban": "BE68BANKB0001234567",
+       "toIban": "BE68BANKA0009876543",
+       "amountCents": 150000,
+       "timestamp": 1727785800000,
+       "reference": "Consulting Invoice"
+     }'
+   ```
+5. **Outgoing Cross-Bank Transfer (`POST /api/transfer-out`)**:
+   ```bash
+   curl -X POST http://localhost:8080/api/transfer-out \
+     -H "Content-Type: application/json" \
+     -d '{
+       "transactionId": "tx-1002",
+       "fromIban": "BE68BANKA0009876543",
+       "toIban": "BE68BANKB0001234567",
+       "amountCents": 50000,
+       "reference": "Split Lunch"
+     }'
+   ```
 
 ### Round 3: Live Traffic & Chaos Survival (01:15 - 01:40)
 - The facilitator will ramp up simulated customer traffic!

@@ -35,6 +35,20 @@ class BankRegistryTest {
     }
 
     @Test
+    fun `should support flexible BIC lookup with XXX and 000 suffixes`() {
+        registry.register(RegisterBankRequest(bic = "BANKBXXX", name = "Bank Beta", webhookUrl = "http://localhost:8081"))
+
+        // Exact match
+        assertThat(registry.getBank(Bic("BANKBXXX"))?.name).isEqualTo("Bank Beta")
+
+        // Match with 000 suffix from IBANs like BE68BANKB0001234567
+        assertThat(registry.getBank(Bic("BANKB000"))?.name).isEqualTo("Bank Beta")
+
+        // Match with base prefix
+        assertThat(registry.getBank(Bic("BANKB"))?.name).isEqualTo("Bank Beta")
+    }
+
+    @Test
     fun `should update scores and transaction counts`() {
         val bic = Bic("BANKAXXX")
         registry.register(RegisterBankRequest(bic = "BANKAXXX", name = "Alpha", webhookUrl = "http://localhost:8080"))

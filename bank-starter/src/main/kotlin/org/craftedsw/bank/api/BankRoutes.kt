@@ -90,6 +90,16 @@ fun Application.bankModule(
             call.respond(HttpStatusCode.OK, statement)
         }
 
+        get("/api/statement/{iban}") {
+            val iban = call.parameters["iban"]
+            if (iban.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Missing required 'iban' parameter"))
+                return@get
+            }
+            val statement = bankService.getStatement(iban)
+            call.respond(HttpStatusCode.OK, statement)
+        }
+
         post("/api/transfer-in") {
             val transfer = call.receive<TransferRequest>()
             val result = bankService.processIncomingTransfer(transfer)

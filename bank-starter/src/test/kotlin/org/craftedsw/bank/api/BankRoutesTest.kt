@@ -122,7 +122,7 @@ class BankRoutesTest {
     }
 
     @Test
-    fun `statement endpoint should return structured statement lines`() = testApplication {
+    fun `statement endpoint should return structured statement lines via query parameter`() = testApplication {
         val bankService = BankService()
         application {
             bankModule(bankService = bankService)
@@ -144,5 +144,29 @@ class BankRoutesTest {
         assertThat(statement.iban).isEqualTo(iban)
         assertThat(statement.currentBalanceCents).isEqualTo(250000)
         assertThat(statement.lines).hasSize(3)
+    }
+
+    @Test
+    fun `statement endpoint should return structured statement lines via path parameter`() = testApplication {
+        val bankService = BankService()
+        application {
+            bankModule(bankService = bankService)
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) { json() }
+        }
+
+        val iban = "BE68BANKA0001234567"
+        bankService.deposit(DepositRequest(iban = iban, amountCents = 666666))
+        bankService.deposit(DepositRequest(iban = iban, amountCents = 666666))
+
+        val response = client.get("/api/statement/$iban")
+        assertThat(response.status).isEqualTo(HttpStatusCode.OK)
+
+        val statement = response.body<StatementResponse>()
+        assertThat(statement.iban).isEqualTo(iban)
+        assertThat(statement.currentBalanceCents).isEqualTo(1333332)
+        assertThat(statement.lines).hasSize(2)
     }
 }
