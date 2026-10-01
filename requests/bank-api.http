@@ -1,0 +1,116 @@
+### =========================================================================
+### 🏦 Participant Bank API - IntelliJ HTTP Client Suite
+### =========================================================================
+### Instructions:
+### 1. Select your active environment (e.g., 'local-alpha', 'local-beta', or 'workshop-live')
+###    from the environment selector dropdown in the top-right corner of the editor.
+### 2. Click the green play icon (▶) next to any request to execute it immediately.
+### =========================================================================
+
+### -------------------------------------------------------------------------
+### 1. Health & Node Status Check
+### -------------------------------------------------------------------------
+# Verify your local bank node is running and check its assigned BIC and port.
+GET {{bankUrl}}/health
+
+> {%
+    client.test("Bank health check returns 200 OK", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.status === "OK", "Bank status is not OK");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 2. Internal Customer Deposit
+### -------------------------------------------------------------------------
+# Deposit 1,000.00 EUR (100,000 cents) into the primary customer account.
+POST {{bankUrl}}/api/deposit
+Content-Type: application/json
+
+{
+  "iban": "{{iban}}",
+  "amountCents": 100000
+}
+
+> {%
+    client.test("Deposit returns updated balance", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.balanceCents >= 100000, "Balance was not credited");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 3. Internal Customer Withdrawal
+### -------------------------------------------------------------------------
+# Withdraw 250.00 EUR (25,000 cents) from the customer account.
+POST {{bankUrl}}/api/withdraw
+Content-Type: application/json
+
+{
+  "iban": "{{iban}}",
+  "amountCents": 25000
+}
+
+> {%
+    client.test("Withdrawal returns updated balance", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 4. Query Account Statement (Path Parameter)
+### -------------------------------------------------------------------------
+# Retrieve full transaction history and running balance for the account.
+GET {{bankUrl}}/api/statement/{{iban}}
+
+> {%
+    client.test("Statement returns valid account lines", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.iban === client.global.get("iban"), "IBAN mismatch");
+        client.assert(Array.isArray(response.body.lines), "Statement lines is not an array");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 5. Query Account Statement (Query Parameter)
+### -------------------------------------------------------------------------
+# Alternative statement query via query string.
+GET {{bankUrl}}/api/statement?iban={{iban}}
+
+### -------------------------------------------------------------------------
+### 6. Outgoing Cross-Bank Transfer (Dispatched to SWIFT Network)
+### -------------------------------------------------------------------------
+# Send 150.00 EUR from your bank account to another bank on the network.
+POST {{bankUrl}}/api/transfer-out
+Content-Type: application/json
+
+{
+  "transactionId": "tx-{{$uuid}}",
+  "fromIban": "{{iban}}",
+  "toIban": "{{targetIban}}",
+  "amountCents": 15000,
+  "reference": "Unconference Consulting Invoice"
+}
+
+### -------------------------------------------------------------------------
+### 7. Direct Incoming Webhook Simulation (Test Webhook Handler)
+### -------------------------------------------------------------------------
+# Test your node's incoming transfer webhook (/api/transfer-in) directly.
+POST {{bankUrl}}/api/transfer-in
+Content-Type: application/json
+
+{
+  "transactionId": "tx-sim-{{$uuid}}",
+  "fromIban": "{{targetIban}}",
+  "toIban": "{{iban}}",
+  "amountCents": 50000,
+  "timestamp": {{$timestamp}},
+  "reference": "Direct test transfer credit"
+}
+
+> {%
+    client.test("Incoming webhook accepts transfer", function() {
+        client.assert(response.status === 200, "Incoming transfer was rejected");
+        client.assert(response.body.status === "ACCEPTED", "Transfer status is not ACCEPTED");
+    });
+%}

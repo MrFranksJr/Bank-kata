@@ -21,6 +21,10 @@ This repository is built with **Gradle Kotlin DSL (`build.gradle.kts`)** and **K
 Bank-kata/
 ├── build.gradle.kts
 ├── settings.gradle.kts
+├── requests/                    # IntelliJ HTTP Client request suite & environments
+│   ├── http-client.env.json     # Environment variables (local-alpha, local-beta, workshop-live)
+│   ├── bank-api.http            # Participant bank API test collection (click-to-run)
+│   └── swift-hub.http           # Facilitator SWIFT network & simulator controls
 ├── shared-contracts/            # Shared DTOs, BIC/IBAN validation models, JSON serializers
 │   └── src/main/kotlin/org/craftedsw/contracts/
 ├── bank-starter/                # Participant bank starter template
@@ -60,6 +64,11 @@ Bank-kata/
 ```bash
 PORT=8080 BIC=BANKAXXX BANK_NAME="Bank Alpha" ./gradlew :bank-starter:run
 ```
+
+### 4. Interactive API Testing (IntelliJ HTTP Client)
+- Open `requests/bank-api.http` to test participant bank operations (deposit, withdraw, statements, inter-bank transfers).
+- Open `requests/swift-hub.http` to trigger simulated traffic bursts or inspect the central audit ledger.
+- Choose your environment (`local-alpha`, `local-beta`, `workshop-live`) from the top-right dropdown and click `▶` on any request.
 
 ---
 

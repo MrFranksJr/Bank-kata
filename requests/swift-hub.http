@@ -1,0 +1,118 @@
+### =========================================================================
+### 🌐 SWIFT Hub & Clearing House - Facilitator HTTP Client Suite
+### =========================================================================
+### Instructions:
+### 1. Select the active environment ('local-alpha', 'local-beta', or 'workshop-live').
+### 2. Click the green play icon (▶) next to any request to execute it.
+### =========================================================================
+
+### -------------------------------------------------------------------------
+### 1. SWIFT Hub Health Check
+### -------------------------------------------------------------------------
+# Check that the central SWIFT Hub is running.
+GET {{hubUrl}}/health
+
+> {%
+    client.test("SWIFT Hub health check returns 200 OK", function() {
+        client.assert(response.status === 200, "Hub status is not 200");
+        client.assert(response.body.status === "OK", "Hub status is not OK");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 2. Live Scoreboard State & Leaderboard Metrics
+### -------------------------------------------------------------------------
+# Fetch real-time bank rankings, throughput, error rates, and registered nodes.
+GET {{hubUrl}}/swift/metrics
+
+> {%
+    client.test("Metrics return connected banks and scoreboard", function() {
+        client.assert(response.status === 200, "Metrics status is not 200");
+        client.assert(Array.isArray(response.body.connectedBanks), "Connected banks is not an array");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 3. Audit Ledger & Conservation of Money Inspection
+### -------------------------------------------------------------------------
+# Inspect the central audit ledger to verify that no money was created or lost.
+GET {{hubUrl}}/swift/ledger
+
+> {%
+    client.test("Ledger verifies conservation of money", function() {
+        client.assert(response.status === 200, "Ledger status is not 200");
+        client.assert(response.body.isConservationOfMoneyVerified === true, "Conservation of money check failed!");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 4. Register a Participant Bank Node Manually
+### -------------------------------------------------------------------------
+# Register Bank Alpha with its BIC and local/tunnel webhook URL.
+POST {{hubUrl}}/swift/register
+Content-Type: application/json
+
+{
+  "bic": "{{bic}}",
+  "name": "{{bankName}}",
+  "webhookUrl": "{{bankUrl}}"
+}
+
+> {%
+    client.test("Bank registered successfully", function() {
+        client.assert(response.status === 200, "Registration failed");
+        client.assert(response.body.status === "REGISTERED", "Status is not REGISTERED");
+    });
+%}
+
+### -------------------------------------------------------------------------
+### 5. Register Bank Beta Manually
+### -------------------------------------------------------------------------
+# Register Bank Beta on port 8081.
+POST {{hubUrl}}/swift/register
+Content-Type: application/json
+
+{
+  "bic": "BANKBXXX",
+  "name": "Bank Beta",
+  "webhookUrl": "http://localhost:8081"
+}
+
+### -------------------------------------------------------------------------
+### 6. Dispatch Inter-Bank Transfer Directly via SWIFT Network
+### -------------------------------------------------------------------------
+# Dispatch an inter-bank settlement from Bank Alpha to Bank Beta.
+POST {{hubUrl}}/swift/transfers
+Content-Type: application/json
+
+{
+  "transactionId": "swift-tx-{{$uuid}}",
+  "fromIban": "{{iban}}",
+  "toIban": "{{targetIban}}",
+  "amountCents": 75000,
+  "reference": "Facilitator Test Settlement"
+}
+
+### -------------------------------------------------------------------------
+### 7. Traffic Simulator - Start Continuous Traffic Flow
+### -------------------------------------------------------------------------
+# Start continuous simulated customer traffic across connected banks (every 2s).
+POST {{hubUrl}}/swift/simulator/start?intervalMs=2000
+
+### -------------------------------------------------------------------------
+### 8. Traffic Simulator - Trigger a 5-Transaction Burst (⚡ Mini Wave)
+### -------------------------------------------------------------------------
+# Send 5 rapid inter-bank transfers across connected banks.
+POST {{hubUrl}}/swift/simulator/burst?count=5
+
+### -------------------------------------------------------------------------
+### 9. Traffic Simulator - Trigger a 20-Transaction Surge (💥 Chaos Spike)
+### -------------------------------------------------------------------------
+# Send a high-volume surge of 20 rapid transfers to test resilience under load.
+POST {{hubUrl}}/swift/simulator/burst?count=20
+
+### -------------------------------------------------------------------------
+### 10. Traffic Simulator - Stop Traffic Generation
+### -------------------------------------------------------------------------
+# Pause all automated background traffic simulation.
+POST {{hubUrl}}/swift/simulator/stop

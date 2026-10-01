@@ -66,9 +66,21 @@ Watch your bank appear on the live projector scoreboard!
 
 ### Round 2: The SWIFT Network & Webhooks (00:45 - 01:15)
 - Open `bank-starter/src/main/kotlin/org/craftedsw/bank/api/BankRoutes.kt`.
-- Test and interact with your bank node using the supported HTTP endpoints:
+- Interact with and test your bank node using either **IntelliJ HTTP Client (Recommended)** or **Traditional `curl` CLI**:
 
-#### Bank Node HTTP API Reference
+#### Option A: IntelliJ HTTP Client (Recommended - Zero Terminal Juggling)
+Open `requests/bank-api.http` directly inside IntelliJ IDEA:
+1. Select your target environment (e.g. `local-alpha` or `workshop-live`) in the top-right environment dropdown.
+2. Click the green play button (`▶`) next to any request to execute it with instant syntax highlighting and inline response assertions:
+   - **`# 2. Internal Customer Deposit`**: Credits 1,000.00 EUR to your account.
+   - **`# 3. Internal Customer Withdrawal`**: Debits 250.00 EUR from your account.
+   - **`# 4. Query Account Statement`**: Displays full statement table and running balance.
+   - **`# 6. Outgoing Cross-Bank Transfer`**: Dispatches a transfer through the SWIFT Hub to another team.
+   - **`# 7. Direct Incoming Webhook Simulation`**: Tests your node's `POST /api/transfer-in` webhook handler.
+
+---
+
+#### Option B: Traditional Terminal `curl` Commands
 1. **Deposit Funds (`POST /api/deposit`)**:
    ```bash
    curl -X POST http://localhost:8080/api/deposit \

@@ -41,13 +41,52 @@ Attendees will set `SWIFT_HUB_URL=https://<your-swift-hub-tunnel>.loca.lt` when 
 
 ---
 
-## 🎮 Facilitator Control Panel Cheatsheet
+## 🎮 Facilitator Operations & Traffic Controls
 
-On the web scoreboard at `http://localhost:9000`:
+Facilitators can operate the network using either the **Web Dashboard**, the **IntelliJ HTTP Client Suite**, or **Terminal CLI**:
+
+### Option A: Web Scoreboard UI (`http://localhost:9000`)
 - **▶ Start Traffic Sim**: Spawns continuous automated customer traffic between registered banks every 2 seconds.
 - **⏹ Stop Sim**: Pauses traffic generation.
 - **⚡ Fire 5 Tx Burst**: Sends a sudden small wave of 5 transactions.
 - **💥 Fire 20 Tx Surge**: Sends a high-frequency spike of 20 rapid transfers across all banks.
+
+---
+
+### Option B: IntelliJ HTTP Client (`requests/swift-hub.http`)
+Open `requests/swift-hub.http` directly in IntelliJ IDEA:
+1. Select the `local-alpha` or `workshop-live` environment.
+2. Click the green play icon (`▶`) next to any operation:
+   - **`# 1. SWIFT Hub Health Check`**: Verify the hub is responding.
+   - **`# 2. Live Scoreboard State & Leaderboard Metrics`**: Inspect connected banks, rankings, and throughput.
+   - **`# 3. Audit Ledger & Conservation of Money Inspection`**: Programmatically verify `isConservationOfMoneyVerified === true`.
+   - **`# 4 & 5. Register Participant Banks Manually`**: Test registration payloads.
+   - **`# 6. Dispatch Inter-Bank Transfer Directly`**: Inject a direct transfer between two participant IBANs.
+   - **`# 7, 8, 9, 10. Traffic Simulator Controls`**: Start, stop, or burst simulated transactions.
+
+---
+
+### Option C: Traditional Terminal `curl` Commands
+1. **Trigger a 5-Tx Burst**:
+   ```bash
+   curl -X POST "http://localhost:9000/swift/simulator/burst?count=5"
+   ```
+2. **Trigger a 20-Tx Chaos Surge**:
+   ```bash
+   curl -X POST "http://localhost:9000/swift/simulator/burst?count=20"
+   ```
+3. **Start Continuous Traffic (every 2s)**:
+   ```bash
+   curl -X POST "http://localhost:9000/swift/simulator/start?intervalMs=2000"
+   ```
+4. **Stop Traffic**:
+   ```bash
+   curl -X POST "http://localhost:9000/swift/simulator/stop"
+   ```
+5. **Inspect Audit Ledger**:
+   ```bash
+   curl -s http://localhost:9000/swift/ledger
+   ```
 
 ---
 
