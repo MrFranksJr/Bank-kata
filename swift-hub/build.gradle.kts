@@ -32,6 +32,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.16")
 
     // Testing
+    testImplementation(project(":bank-starter"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
 }
